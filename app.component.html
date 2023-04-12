@@ -1,0 +1,244 @@
+<!-- 
+
+    Header
+
+  -->
+<div class="flex">
+  <!-- Date Changer -->
+  <div class="date-change">
+    <button mat-icon-button (click)="changeDate(false)">
+      <mat-icon>keyboard_arrow_left</mat-icon>
+    </button>
+    <div [ngSwitch]="view.value">
+      <!-- Week View -->
+      <div *ngSwitchCase="'week'">
+        {{ week[0] | date : "dd LLL" }} -
+        {{ week[week.length - 1] | date : "dd LLL" }}
+      </div>
+      <!-- Day View -->
+      <div *ngSwitchCase="'day'">{{ presentedDate | date : "dd LLL y" }}</div>
+      <!-- List View -->
+      <div *ngSwitchCase="'list'">{{ presentedDate | date : "LLL y" }}</div>
+      <!-- Month View -->
+      <div *ngSwitchDefault>{{ presentedDate | date : "LLL y" }}</div>
+    </div>
+    <button mat-icon-button (click)="changeDate(true)">
+      <mat-icon>keyboard_arrow_right</mat-icon>
+    </button>
+    <button mat-button (click)="goToToday()">Today</button>
+  </div>
+  <!-- //Date Changer -->
+  <!-- View Changer -->
+  <mat-button-toggle-group #view="matButtonToggleGroup" class="view-change">
+    <mat-button-toggle value="month" checked>Month</mat-button-toggle>
+    <mat-button-toggle value="week">Week</mat-button-toggle>
+    <mat-button-toggle value="day">Day</mat-button-toggle>
+    <mat-button-toggle value="list">List</mat-button-toggle>
+  </mat-button-toggle-group>
+  <!-- View Changer -->
+  <!-- Filter Button -->
+  <button mat-icon-button [matMenuTriggerFor]="filter">
+    <mat-icon>search</mat-icon>
+  </button>
+</div>
+<!-- 
+
+    //Header
+
+  -->
+<!-- 
+
+    Calendar
+
+  -->
+<div [ngSwitch]="view.value">
+  <!-- 
+
+      Week View
+
+     -->
+  <div *ngSwitchCase="'week'">
+    <div class="calendar-container">
+      <div
+        class="week-day"
+        [class.first-week-day]="isFirst"
+        *ngFor="let weekName of weekDays; let isFirst = first; let i = index"
+      >
+        {{ weekName }} - {{ week[i] | date : "dd" }}
+      </div>
+    </div>
+    <div class="flex">
+      <div class="hours-field">
+        <div class="hour-cell" *ngFor="let date of weekHours">{{ date }}</div>
+      </div>
+      <div class="week-container">
+        <div
+          class="week-column"
+          *ngFor="let weekName of weekDays; let i = index"
+        >
+          <div
+            class="week-field"
+            *ngFor="let date of weekHours"
+            [class.week-field-event]="events[week[i].toLocaleDateString()]"
+          >
+            <div
+              *ngFor="let event of events[week[i].toLocaleDateString()]"
+              class="event-week-container"
+            >
+              <div
+                class="event event-week-view"
+                *ngIf="event.startHour <= date && event.endHour >= date"
+                [ngClass]="{
+                  'first-event-week-view': event.startHour == date,
+                  'last-event-week-view': event.endHour == date,
+                  'middle-event-week-view':
+                    event.startHour < date && event.endHour > date
+                }"
+              >
+                <span *ngIf="event.startHour == date">{{
+                  event?.name
+                }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 
+
+      Day View
+
+     -->
+  <div *ngSwitchCase="'day'">
+    <div class="calendar-container">
+      <div class="week-day first-week-day">
+        {{ presentedDate | date : "EEEE dd" }}
+      </div>
+    </div>
+    <div class="flex">
+      <div class="hours-field">
+        <div class="hour-cell" *ngFor="let date of weekHours">{{ date }}</div>
+      </div>
+      <div class="week-container">
+        <div class="week-column">
+          <div
+            class="week-field"
+            *ngFor="let date of weekHours"
+            [style.padding.px]="
+              events[presentedDate.toLocaleDateString()] ? 0 : 10
+            "
+          >
+            <div
+              *ngFor="let event of events[presentedDate.toLocaleDateString()]"
+              class="event-week-container"
+            >
+              <div
+                class="event event-week-view"
+                *ngIf="event.startHour <= date && event.endHour >= date"
+                [ngClass]="{
+                  'first-event-week-view': event.startHour == date,
+                  'last-event-week-view': event.endHour == date,
+                  'middle-event-week-view':
+                    event.startHour < date && event.endHour > date
+                }"
+              >
+                <span *ngIf="event.startHour == date">{{
+                  event?.name
+                }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 
+
+      List View
+
+     -->
+  <div *ngSwitchCase="'list'">
+    <mat-card class="list-container">
+      <mat-list *ngFor="let eventList of events | keyvalue">
+        <mat-list-item *ngFor="let event of events">
+          <mat-icon mat-list-icon>today</mat-icon>
+        </mat-list-item>
+        <mat-divider></mat-divider>
+      </mat-list>
+    </mat-card>
+  </div>
+  <!-- 
+
+      Month View
+
+     -->
+  <div *ngSwitchDefault>
+    <div class="calendar-container">
+      <div class="week-day" *ngFor="let week of weekDays">
+        {{ week }}
+      </div>
+    </div>
+    <div class="container-days" *ngIf="selection$ | async as selection">
+      <div
+        [matMenuTriggerFor]="menu"
+        [matMenuTriggerData]="{ date: selection }"
+        (menuClosed)="closeMenu()"
+        class="day"
+        #MenuTrigger="matMenuTrigger"
+        *ngFor="let date of months"
+        (mousedown)="mouseDown(date)"
+        (mouseup)="mouseUp()"
+        (mouseover)="mouseOver($event, date)"
+        [ngClass]="{
+          today: today.getTime() == date.getTime(),
+          'next-month': date.getMonth() != this.presentedDate.getMonth(),
+          selected:
+            ((selection?.start || '') <= date &&
+              date <= (selection?.end || '')) ||
+            ((selection?.start || '') >= date && date >= (selection?.end || ''))
+        }"
+      >
+        <p class="month-day">{{ date | date : "dd" }}</p>
+        <div class="event-container">
+          <div
+            *ngFor="let event of events[date.toLocaleDateString()]"
+            [ngClass]="{
+              event: true,
+              'event-start':
+                (event?.startDate?.toLocaleDateString() ==
+                  date.toLocaleDateString() &&
+                  event.endDate > date) ||
+                event.endDate > date,
+              'event-end':
+                (event.endDate.toLocaleDateString() ==
+                  date.toLocaleDateString() &&
+                  event.startDate <= date) ||
+                event.startDate < date
+            }"
+          >
+            {{ event?.name }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- 
+
+    //Calendar
+
+  -->
+
+<!-- 
+
+  Add Event Menu
+
+-->
+<mat-menu class="event-menu" #menu="matMenu" id="menuBtn"> </mat-menu>
+<!-- 
+
+  Filter Popup
+
+-->
+<mat-menu #filter="matMenu"> </mat-menu>
