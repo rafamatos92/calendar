@@ -1,35 +1,36 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
-import { MatMenuTrigger } from '@angular/material/menu';
-import { BehaviorSubject, Observable, of } from 'rxjs';
-import { MatDialog } from '@angular/material/dialog';
+import { Component, OnInit, ViewChild } from "@angular/core";
+import { FormBuilder, FormGroup } from "@angular/forms";
+import { MatMenuTrigger } from "@angular/material/menu";
+import { BehaviorSubject, Observable, of } from "rxjs";
+import { MatDialog } from "@angular/material/dialog";
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
+  selector: "app-root",
+  templateUrl: "./app.component.html",
+  styleUrls: ["./app.component.scss"],
 })
 export class AppComponent implements OnInit {
-  @ViewChild('MenuTrigger') MenuTrigger: MatMenuTrigger | undefined;
-  @ViewChild('view') view: any;
+  @ViewChild("MenuTrigger") MenuTrigger: MatMenuTrigger | undefined;
+  @ViewChild("view") view: any;
 
   weekHours = Array(24 * 2)
     .fill(0)
     .map((_, i) => {
-      return ('0' + ~~(i / 2) + ': 0' + 60 * ((i / 2) % 1)).replace(
+      return ("0" + ~~(i / 2) + ": 0" + 60 * ((i / 2) % 1)).replace(
         /\d(\d\d)/g,
-        '$1'
+        "$1"
       );
     });
-  weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   events: any = {
-    '11/04/2023': [
+    "11/04/2023": [
       {
-        name: 'Vacation',
+        name: "Vacation",
         startDate: new Date(),
         endDate: new Date(),
-        startHour: '00: 00',
-        endHour: '01: 00',
+        startHour: "00: 00",
+        endHour: "01: 00",
       },
     ],
   };
@@ -57,21 +58,21 @@ export class AppComponent implements OnInit {
   // Init form
   initForm(): void {
     this.form = this.formBuilder.group({
-      name: [''],
-      startDate: [''],
-      endDate: [''],
+      name: [""],
+      startDate: [""],
+      endDate: [""],
       allDay: [true],
-      hours: [''],
+      hours: [""],
     });
   }
 
   // Change Date Button action
   changeDate(nextDate: boolean): void {
-    if (this.view.value === 'month') {
+    if (this.view.value === "month") {
       this.viewMonth += nextDate ? -1 : 1;
-    } else if (this.view.value === 'week') {
+    } else if (this.view.value === "week") {
       this.viewWeek += nextDate ? -7 : 7;
-    } else if (this.view.value === 'day') {
+    } else if (this.view.value === "day") {
       this.viewWeek += nextDate ? -1 : 1;
     }
     this.changePresentedDate();
